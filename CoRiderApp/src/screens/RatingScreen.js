@@ -3,7 +3,7 @@ import { View, Button, Alert } from 'react-native';
 import axios from 'axios';
 import { API } from '../config';
 import RatingModule from '../components/ratingModule';
-import FeedbackCard from '../components/feedback';
+import FeedbackCard from '../components/FeedbackCard';
 
 export default function RatingScreen({ route }) {
   const { ride_id, rater_id, ratee_id } = route.params;
