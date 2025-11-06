@@ -7,92 +7,12 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  user_id                       Int               @id @default(autoincrement())
-  name                          String?           @db.VarChar
-  phone_number                  String            @unique @db.VarChar
-  email                         String?           @db.VarChar
-  role                          role
-  wallet_balance                Float?            @default(0)
-  created_at                    DateTime?         @default(now()) @db.Timestamp(6)
-  Payment_Payment_payeeidToUser Payment[]         @relation("Payment_payeeidToUser")
-  Payment_Payment_payeridToUser Payment[]         @relation("Payment_payeridToUser")
-  Rating_Rating_rateeidToUser   Rating[]          @relation("Rating_rateeidToUser")
-  Rating_Rating_rateridToUser   Rating[]          @relation("Rating_rateridToUser")
-  Report                        Report[]
-  RideParticipant               RideParticipant[]
+enum role {
+  rider
+  corider
 }
 
-model Ride {
-  ride_id         Int               @id @default(autoincrement())
-  start_location  String?           @db.VarChar
-  end_location    String?           @db.VarChar
-  fare_amount     Float?
-  start_time      DateTime?         @db.Timestamp(6)
-  end_time        DateTime?         @db.Timestamp(6)
-  status          ridestatus?       @default(Pending)
-  created_at      DateTime?         @default(now()) @db.Timestamp(6)
-  Payment         Payment[]
-  Rating          Rating[]
-  Report          Report[]
-  RideParticipant RideParticipant[]
-}
-
-model RideParticipant {
-  id       Int       @id @default(autoincrement())
-  rideid   Int
-  userid   Int
-  role     role
-  added_at DateTime? @default(now()) @db.Timestamp(6)
-  Ride     Ride      @relation(fields: [rideid], references: [ride_id], onDelete: Cascade, onUpdate: NoAction)
-  User     User      @relation(fields: [userid], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model Payment {
-  payment_id                 Int            @id @default(autoincrement())
-  rideid                     Int?
-  payerid                    Int?
-  payeeid                    Int?
-  amount                     Float?
-  payment_method             String?        @db.VarChar
-  status                     paymentstatus? @default(Pending)
-  payment_time               DateTime?      @default(now()) @db.Timestamp(6)
-  User_Payment_payeeidToUser User?          @relation("Payment_payeeidToUser", fields: [payeeid], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
-  User_Payment_payeridToUser User?          @relation("Payment_payeridToUser", fields: [payerid], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
-  Ride                       Ride?          @relation(fields: [rideid], references: [ride_id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model Rating {
-  rating_id                 Int       @id @default(autoincrement())
-  rideid                    Int?
-  raterid                   Int?
-  rateeid                   Int?
-  rating_value              Int?
-  feedback_text             String?
-  created_at                DateTime? @default(now()) @db.Timestamp(6)
-  User_Rating_rateeidToUser User?     @relation("Rating_rateeidToUser", fields: [rateeid], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
-  User_Rating_rateridToUser User?     @relation("Rating_rateridToUser", fields: [raterid], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
-  Ride                      Ride?     @relation(fields: [rideid], references: [ride_id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-model Report {
-  report_id  Int       @id @default(autoincrement())
-  userid     Int?
-  rideid     Int?
-  category   String?   @db.VarChar
-  message    String?
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  Ride       Ride?     @relation(fields: [rideid], references: [ride_id], onDelete: Cascade, onUpdate: NoAction)
-  User       User?     @relation(fields: [userid], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
-}
-
-enum paymentstatus {
-  Pending
-  Success
-  Failed
-}
-
-enum ridestatus {
+enum RideStatus {
   Pending
   Ongoing
   Completed
@@ -102,7 +22,87 @@ enum ridestatus {
   Settled
 }
 
-enum role {
-  rider
-  corider
+enum PaymentStatus {
+  Pending
+  Success
+  Failed
+}
+
+model User {
+  user_id        Int        @id @default(autoincrement())
+  name           String?
+  phone_number   String     @unique
+  email          String?
+  role           role
+  wallet_balance Float?     @default(0)
+  created_at     DateTime?  @default(now())
+  rides          RideParticipant[]
+  paymentsMade   Payment[]  @relation("PaymentsMade")
+  paymentsRecv   Payment[]  @relation("PaymentsRecv")
+  ratingsGiven   Rating[]   @relation("RatingsGiven")
+  ratingsRecv    Rating[]   @relation("RatingsRecv")
+  reports        Report[]
+}
+
+model Ride {
+  ride_id       Int              @id @default(autoincrement())
+  start_location String?
+  end_location   String?
+  fare_amount    Float?
+  start_time     DateTime?
+  end_time       DateTime?
+  status         RideStatus      @default(Pending)
+  created_at     DateTime?       @default(now())
+  participants   RideParticipant[]
+  payments       Payment[]
+  ratings        Rating[]
+  reports        Report[]
+}
+
+model RideParticipant {
+  id      Int    @id @default(autoincrement())
+  rideId  Int
+  userId  Int
+  role    role
+  added_at DateTime? @default(now())
+  ride    Ride  @relation(fields: [rideId], references: [ride_id])
+  user    User  @relation(fields: [userId], references: [user_id])
+}
+
+model Payment {
+  payment_id     Int            @id @default(autoincrement())
+  rideId         Int?
+  payerId        Int?
+  payeeId        Int?
+  amount         Float?
+  payment_method String?
+  status         PaymentStatus  @default(Pending)
+  payment_time   DateTime?      @default(now())
+  ride           Ride?          @relation(fields: [rideId], references: [ride_id])
+  payer          User?          @relation("PaymentsMade", fields: [payerId], references: [user_id])
+  payee          User?          @relation("PaymentsRecv", fields: [payeeId], references: [user_id])
+}
+
+model Rating {
+  rating_id    Int       @id @default(autoincrement())
+  rideId       Int?
+  raterId      Int?
+  rateeId      Int?
+  rating_value Int?
+  feedback_text String?
+  created_at   DateTime? @default(now())
+  ride         Ride?     @relation(fields: [rideId], references: [ride_id])
+  rater        User?     @relation("RatingsGiven", fields: [raterId], references: [user_id])
+  ratee        User?     @relation("RatingsRecv", fields: [rateeId], references: [user_id])
+}
+
+model Report {
+  report_id   Int       @id @default(autoincrement())
+  userId      Int?
+  rideId      Int?
+  category    String?
+  message     String?
+  created_at  DateTime? @default(now())
+  user        User?     @relation(fields: [userId], references: [user_id])
+  ride        Ride?     @relation(fields: [rideId], references: [ride_id])
 }
