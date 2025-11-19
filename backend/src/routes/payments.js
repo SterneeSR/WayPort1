@@ -2,7 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const prisma = require('../prisma');
-const { io } = require('../server');
+const io = global._io;
+
 
 router.post('/', async (req, res, next) => {
   try {

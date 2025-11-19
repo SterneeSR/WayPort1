@@ -5,8 +5,8 @@ buildscript {
         compileSdkVersion = 34
         targetSdkVersion = 34
         ndkVersion = "25.2.9519653"
-        kotlinVersion = "1.8.22"
-        gradlePluginVersion = "8.6.1"
+        kotlinVersion = "1.9.24"
+        gradlePluginVersion = "8.5.2"  // <-- use 8.5.2 for best RN compatibility
     }
 
     repositories {

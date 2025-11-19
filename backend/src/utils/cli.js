@@ -6,12 +6,13 @@ function ask(q, rl) {
   return new Promise(resolve => rl.question(q, ans => resolve(ans)));
 }
 
-module.exports = async function startCLI(io) {
+module.exports = function startCLI(io) { // <-- receive io here
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
   console.log('Type "new" to create a new ride, "exit" to quit.');
 
   rl.on('line', async (input) => {
     const cmd = input.trim();
+
     if (cmd === 'new') {
       try {
         const start_location = await ask('Start location: ', rl);
@@ -28,24 +29,29 @@ module.exports = async function startCLI(io) {
             fare_amount,
             start_time: start_time ? new Date(start_time) : null,
             end_time: end_time ? new Date(end_time) : null,
-            status: 'Payment_Pending' // initial
-          }
+            status: 'Payment_Pending', // initial
+          },
         });
 
         console.log('Ride created with id', ride.ride_id);
-        // Broadcast to clients
-        io.emit('ride:new', ride);
-        console.log('Broadcasted ride:new');
+
+        // ✅ Emit only if io exists
+        if (io) {
+          io.emit('ride:new', ride);
+          console.log('📡 Broadcasted ride:new to clients:', ride);
+        } else {
+          console.warn('⚠️ io not available, ride not broadcasted');
+        }
 
       } catch (e) {
-        console.error('Error creating ride:', e);
+        console.error('❌ Error creating ride:', e);
       }
     } else if (cmd === 'exit') {
-      console.log('Exiting CLI.');
+      console.log('👋 Exiting CLI.');
       rl.close();
       process.exit(0);
     } else {
-      console.log('Unknown command. Type "new" or "exit".');
+      console.log('❓ Unknown command. Type "new" or "exit".');
     }
   });
 };

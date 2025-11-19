@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { socket } from '../socket';
 import PointModule from '../components/PointModule';
-import RideSummaryModule from '../components/rideSummaryModule';
+import RideSummaryModule from '../components/RideSummaryModule';
 
 export default function RideDetailsScreen({ navigation }) {
   const [ride, setRide] = useState(null);

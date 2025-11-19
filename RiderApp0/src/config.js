@@ -1,5 +1,5 @@
 // src/config.js
-const BASE_URL = 'http://10.0.2.2:5000'; // OR your IP address (e.g., http://192.168.x.x:5000)
+const BASE_URL = 'http://192.168.177.3:5000'; // OR your IP address (e.g., http://192.168.x.x:5000)
 
 export const API = {
   RIDES: `${BASE_URL}/api/rides`,
